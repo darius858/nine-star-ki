@@ -1,27 +1,21 @@
 import React, { useMemo, useState, useEffect } from "react";
 
-// Nine Star Ki – tabel-gedreven + Branding “Feng Shui Nederland”
-// --------------------------------------------------------------
-// • Gebruikt Tabel 1 (jaar→hoofdster) + Tabel 2 (solar-maandranges → volledige reeks)
-// • Volledig in JS/JSX (geen TypeScript-annotaties)
-// • Stabiele LOGO_DATA_URI (korte placeholder) + optie om je echte logo lokaal te kiezen
-
 // ====== BRAND SETTINGS ======
-const LOGO_DATA_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMB/awXoQAAAABJRU5ErkJggg=="; // transparant 1x1 (voorkomt parser-issues)
+const LOGO_DATA_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMB/awXoQAAAABJRU5ErkJggg=="; // transparant 1x1
 const BRAND = {
   name: "Feng Shui Nederland",
   colors: {
     primary: "#ff6342", // vuur
     water:   "#84b9db", // water
-    wood:    "#72955d", // hout (groen)
-    earth:   "#bc8163", // aarde (bruin)
-    metal:   "#737373", // metaal (grijs)
-    base:    "#fbf2f0", // zachte achtergrond
+    wood:    "#72955d", // hout
+    earth:   "#bc8163", // aarde
+    metal:   "#737373", // metaal
+    base:    "#fbf2f0", // achtergrond
   }
 };
 
 function hexToRgb(hex){
-  const m = /^#?([a-f\\d]{2})([a-f\\d]{2})([a-f\\d]{2})$/i.exec(hex);
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   if(!m) return {r:0,g:0,b:0};
   return { r: parseInt(m[1],16), g: parseInt(m[2],16), b: parseInt(m[3],16) };
 }
@@ -36,10 +30,35 @@ const DATA = {"year_to_star": {"1901":9,"1902":8,"1903":7,"1904":6,"1905":5,"190
 
 // ===== Hulpfuncties =====
 function isBeforeNineKiNewYear(d){ const y=d.getFullYear(); const b=new Date(y,1,4); return d<b; }
-function inRangeMD(m,d,start,end){ const a=m*100+d, s=start.month*100+start.day, e=end.month*100+end+day; if(s<=e) return a>=s && a<=e; return (a>=s)||(a<=e); }
-function monthRangeIndex(date){ const m=date.getMonth()+1, d=date.getDate(); for(let i=0;i<DATA.month_ranges.length;i++){ const r=DATA.month_ranges[i]; if(inRangeMD(m,d,r.start,r.end)) return i; } return -1; }
-function yearStarFromDataset(date){ const y0=date.getFullYear(); const useY=isBeforeNineKiNewYear(date)?y0-1:y0; const tbl=DATA.year_to_star[String(useY)]; if(tbl) return {useYear:useY, star:tbl}; return {useYear:useY, star:null}; }
-function sequenceFromDataset(date){ const ys=yearStarFromDataset(date).star; const i=monthRangeIndex(date); if(i<0||ys==null) return null; const row=DATA.month_ranges[i]; const seq=row.sequences[String(ys)]; if(!seq||seq.length!==3) return null; return {year:seq[0], month:seq[1], day:seq[2], monthLabel:row.label}; }
+function inRangeMD(m,d,start,end){
+  const a=m*100+d, s=start.month*100+start.day, e=end.month*100+end.day; // <-- gefixt
+  if(s<=e) return a>=s && a<=e;
+  return (a>=s)||(a<=e);
+}
+function monthRangeIndex(date){
+  const m=date.getMonth()+1, d=date.getDate();
+  for(let i=0;i<DATA.month_ranges.length;i++){
+    const r=DATA.month_ranges[i];
+    if(inRangeMD(m,d,r.start,r.end)) return i;
+  }
+  return -1;
+}
+function yearStarFromDataset(date){
+  const y0=date.getFullYear();
+  const useY=isBeforeNineKiNewYear(date)?y0-1:y0;
+  const tbl=DATA.year_to_star[String(useY)];
+  if(tbl) return {useYear:useY, star:tbl};
+  return {useYear:useY, star:null};
+}
+function sequenceFromDataset(date){
+  const ys=yearStarFromDataset(date).star;
+  const i=monthRangeIndex(date);
+  if(i<0||ys==null) return null;
+  const row=DATA.month_ranges[i];
+  const seq=row.sequences[String(ys)];
+  if(!seq||seq.length!==3) return null;
+  return {year:seq[0], month:seq[1], day:seq[2], monthLabel:row.label};
+}
 
 // Kleur bepalen obv getal (element → merk-kleur)
 function colorFor(n){
@@ -52,8 +71,6 @@ function colorFor(n){
 }
 
 // ===== UI componenten =====
-
-// Specifieke, compacte dynamiek-teksten (2 zinnen) per getal
 const TEXT = {
   1: { core: "Je energie is stromend en onderzoekend; je zoekt steeds de diepere laag.", emotion: "Emotioneel heb je rust en vertrouwen nodig.", action: "In actie beweeg je flexibel mee en verbind je mensen." },
   2: { core: "Je energie is stabiliserend en dienstbaar; je brengt rust en gronding.", emotion: "Emotioneel zoek je zekerheid en nabijheid.", action: "In actie ondersteun je, breng je orde en maak je het samen." },
@@ -73,12 +90,11 @@ function flowSummary(y, m, d){
 }
 
 function StarBadge({ n }){
-  // Kleur op basis van 5 elementen — getal ín het gekleurde vlak
   let bg = BRAND.colors.earth;
-  if(n===9) bg = BRAND.colors.primary;       // vuur
-  else if(n===1) bg = BRAND.colors.water;    // water
-  else if(n===3 || n===4) bg = BRAND.colors.wood; // hout
-  else if(n===6 || n===7) bg = BRAND.colors.metal; // metaal
+  if(n===9) bg = BRAND.colors.primary;
+  else if(n===1) bg = BRAND.colors.water;
+  else if(n===3 || n===4) bg = BRAND.colors.wood;
+  else if(n===6 || n===7) bg = BRAND.colors.metal;
   const fg = contrastOn(bg);
   return (
     <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl shadow-sm" style={{ backgroundColor: bg, color: fg }}>
@@ -112,12 +128,11 @@ export default function NineStarKiApp(){
   const [value,setValue] = useState("1990-08-15");
   const [logoUrl, setLogoUrl] = useState(LOGO_DATA_URI);
 
-  // logo uit localStorage laden (optioneel)
   useEffect(()=>{
     try {
       const v = localStorage.getItem('fsn_logo_data_uri');
       if(v) setLogoUrl(v);
-    } catch(e) { /* noop */ }
+    } catch(e) {}
   },[]);
 
   const result=useMemo(()=>{
@@ -146,7 +161,13 @@ export default function NineStarKiApp(){
           <div style={{height:4, backgroundColor:BRAND.colors.primary, borderBottomLeftRadius:16, borderBottomRightRadius:16}} />
         </header>
 
-        <DatePicker value={value} onChange={setValue} />
+        <div className="bg-white rounded-2xl shadow-sm ring-1 p-5 mb-8" style={{borderColor:BRAND.colors.base}}>
+          <label className="block text-sm font-medium" style={{color:BRAND.colors.metal}}>Geboortedatum</label>
+          <input type="date" className="mt-2 w-full rounded-xl border px-3 py-2 focus:outline-none"
+            style={{borderColor:BRAND.colors.base, boxShadow:'0 0 0 0 rgba(0,0,0,0)', outlineColor:BRAND.colors.primary}}
+            value={value}
+            onChange={function(e){ setValue(e.target.value); }} />
+        </div>
 
         {result && result.info ? (
           <main className="space-y-6">
@@ -190,24 +211,3 @@ export default function NineStarKiApp(){
     </div>
   );
 }
-
-// Small date input component (for neatness)
-function DatePicker({ value, onChange }){
-  return (
-    <div className="bg-white rounded-2xl shadow-sm ring-1 p-5 mb-8" style={{borderColor:BRAND.colors.base}}>
-      <label className="block text-sm font-medium" style={{color:BRAND.colors.metal}}>Geboortedatum</label>
-      <input type="date" className="mt-2 w-full rounded-xl border px-3 py-2 focus:outline-none"
-        style={{borderColor:BRAND.colors.base, boxShadow:'0 0 0 0 rgba(0,0,0,0)', outlineColor:BRAND.colors.primary}}
-        value={value}
-        onChange={function(e){ onChange(e.target.value); }}
-      />
-    </div>
-  );
-}
-
-// Pure helpers (copied from above scope)
-function isBeforeNineKiNewYear(d){ const y=d.getFullYear(); const b=new Date(y,1,4); return d<b; }
-function inRangeMD(m,d,start,end){ const a=m*100+d, s=start.month*100+start.day, e=end.month*100+end+day; if(s<=e) return a>=s && a<=e; return (a>=s)||(a<=e); }
-function monthRangeIndex(date){ const m=date.getMonth()+1, d=date.getDate(); for(let i=0;i<DATA.month_ranges.length;i++){ const r=DATA.month_ranges[i]; if(inRangeMD(m,d,r.start,r.end)) return i; } return -1; }
-function yearStarFromDataset(date){ const y0=date.getFullYear(); const useY=isBeforeNineKiNewYear(date)?y0-1:y0; const tbl=DATA.year_to_star[String(useY)]; if(tbl) return {useYear:useY, star:tbl}; return {useYear:useY, star:null}; }
-function sequenceFromDataset(date){ const ys=yearStarFromDataset(date).star; const i=monthRangeIndex(date); if(i<0||ys==null) return null; const row=DATA.month_ranges[i]; const seq=row.sequences[String(ys)]; if(!seq||seq.length!==3) return null; return {year:seq[0], month:seq[1], day:seq[2], monthLabel:row.label}; }
