@@ -1,8 +1,8 @@
 import React, { useMemo, useState, useEffect } from "react";
 
 // ====== BRAND SETTINGS ======
-const DEFAULT_LOGO = "/logo.png?v=3
-  BRAND = {
+const DEFAULT_LOGO = "/logo.png?v=4"; // zet je echte logo in /public/logo.png
+const BRAND = {
   name: "Feng Shui Nederland",
   colors: {
     primary: "#ff6342", // vuur
@@ -11,7 +11,7 @@ const DEFAULT_LOGO = "/logo.png?v=3
     earth:   "#bc8163", // aarde
     metal:   "#737373", // metaal
     base:    "#fbf2f0", // achtergrond
-  }
+  },
 };
 
 function hexToRgb(hex){
