@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 
-// ====== BRAND SETTINGS ======
-const DEFAULT_LOGO = "/logo.png?v=4"; // zet je echte logo in /public/logo.png
+// ====== BRAND SETTINGS (logo + kleuren) ======
+const DEFAULT_LOGO = "/logo.png?v=4"; // zorg dat public/logo.png bestaat
 const BRAND = {
   name: "Feng Shui Nederland",
   colors: {
@@ -10,7 +10,7 @@ const BRAND = {
     wood:    "#72955d", // hout
     earth:   "#bc8163", // aarde
     metal:   "#737373", // metaal
-    base:    "#fbf2f0", // achtergrond
+    base:    "#fbf2f0", // zachte achtergrond
   },
 };
 
@@ -31,7 +31,7 @@ const DATA = {"year_to_star": {"1901":9,"1902":8,"1903":7,"1904":6,"1905":5,"190
 // ===== Hulpfuncties =====
 function isBeforeNineKiNewYear(d){ const y=d.getFullYear(); const b=new Date(y,1,4); return d<b; }
 function inRangeMD(m,d,start,end){
-  const a=m*100+d, s=start.month*100+start.day, e=end.month*100+end.day; // <-- gefixt
+  const a=m*100+d, s=start.month*100+start.day, e=end.month*100+end.day; // <-- correct
   if(s<=e) return a>=s && a<=e;
   return (a>=s)||(a<=e);
 }
@@ -70,7 +70,7 @@ function colorFor(n){
   return bg;
 }
 
-// ===== UI componenten =====
+// ===== UI helpers =====
 const TEXT = {
   1: { core: "Je energie is stromend en onderzoekend; je zoekt steeds de diepere laag.", emotion: "Emotioneel heb je rust en vertrouwen nodig.", action: "In actie beweeg je flexibel mee en verbind je mensen." },
   2: { core: "Je energie is stabiliserend en dienstbaar; je brengt rust en gronding.", emotion: "Emotioneel zoek je zekerheid en nabijheid.", action: "In actie ondersteun je, breng je orde en maak je het samen." },
@@ -90,11 +90,7 @@ function flowSummary(y, m, d){
 }
 
 function StarBadge({ n }){
-  let bg = BRAND.colors.earth;
-  if(n===9) bg = BRAND.colors.primary;
-  else if(n===1) bg = BRAND.colors.water;
-  else if(n===3 || n===4) bg = BRAND.colors.wood;
-  else if(n===6 || n===7) bg = BRAND.colors.metal;
+  const bg = colorFor(n);
   const fg = contrastOn(bg);
   return (
     <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl shadow-sm" style={{ backgroundColor: bg, color: fg }}>
@@ -123,24 +119,25 @@ function Properties({ n }){
   );
 }
 
-// ===== Hoofdcomponent =====
+// ===== UI =====
 export default function NineStarKiApp(){
   const [value,setValue] = useState("1990-08-15");
-  const [logoUrl, setLogoUrl] = useState(LOGO_DATA_URI);
+  const [logoUrl, setLogoUrl] = useState(DEFAULT_LOGO);
 
+  // optioneel: logo uit localStorage oppakken
   useEffect(()=>{
     try {
       const v = localStorage.getItem('fsn_logo_data_uri');
       if(v) setLogoUrl(v);
-    } catch(e) {}
+    } catch(e){}
   },[]);
 
   const result=useMemo(()=>{
     const d=value?new Date(value+"T12:00:00"):null;
     if(!d||isNaN(d.getTime())) return null;
     const seq=sequenceFromDataset(d);
-    if(!seq) return {date:d, info:null, source:"dataset-missing"};
-    return {date:d, info:{yearStar:seq.year, monthStar:seq.month, dayStar:seq.day, monthLabel:seq.monthLabel}, source:"dataset"};
+    if(!seq) return {date:d, info:null};
+    return {date:d, info:{yearStar:seq.year, monthStar:seq.month, dayStar:seq.day, monthLabel:seq.monthLabel}};
   },[value]);
 
   const headerBg = 'linear-gradient(90deg, ' + BRAND.colors.base + ', #ffffff)';
@@ -150,8 +147,22 @@ export default function NineStarKiApp(){
       <div className="max-w-4xl mx-auto px-4 py-10">
         <header className="mb-8 rounded-2xl shadow-sm ring-1" style={{background:headerBg, borderColor:BRAND.colors.base}}>
           <div className="flex items-center gap-4 p-5">
-            <div className="p-2 bg-white rounded-md ring-1 ring-slate-200">
-              <img src={logoUrl} alt="Feng Shui Nederland" className="w-16 h-16 object-contain" style={{filter:'drop-shadow(0 1px 1.5px rgba(0,0,0,0.25))'}} />
+            <div
+              className="p-2 rounded-md ring-1 ring-slate-200 bg-slate-50"
+              style={{
+                backgroundImage:
+                  'linear-gradient(45deg, rgba(148,163,184,.25) 25%, rgba(0,0,0,0) 25%, rgba(0,0,0,0) 50%, rgba(148,163,184,.25) 50%, rgba(148,163,184,.25) 75%, rgba(0,0,0,0) 75%, rgba(0,0,0,0))',
+                backgroundSize: '8px 8px'
+              }}
+            >
+              <img
+                src={logoUrl}
+                alt="Feng Shui Nederland"
+                className="w-16 h-16 object-contain"
+                onError={() => {
+                  if (logoUrl !== "/icons/icon-192.png?v=4") setLogoUrl("/icons/icon-192.png?v=4");
+                }}
+              />
             </div>
             <div>
               <h1 className="text-3xl font-bold tracking-tight" style={{color:BRAND.colors.primary}}>{BRAND.name}</h1>
@@ -164,9 +175,7 @@ export default function NineStarKiApp(){
         <div className="bg-white rounded-2xl shadow-sm ring-1 p-5 mb-8" style={{borderColor:BRAND.colors.base}}>
           <label className="block text-sm font-medium" style={{color:BRAND.colors.metal}}>Geboortedatum</label>
           <input type="date" className="mt-2 w-full rounded-xl border px-3 py-2 focus:outline-none"
-            style={{borderColor:BRAND.colors.base, boxShadow:'0 0 0 0 rgba(0,0,0,0)', outlineColor:BRAND.colors.primary}}
-            value={value}
-            onChange={function(e){ setValue(e.target.value); }} />
+            style={{borderColor:BRAND.colors.base}} value={value} onChange={(e)=>setValue(e.target.value)} />
         </div>
 
         {result && result.info ? (
@@ -177,37 +186,11 @@ export default function NineStarKiApp(){
                 Reeks: <span className="font-semibold" style={{color:BRAND.colors.primary}}>{result.info.yearStar} – {result.info.monthStar} – {result.info.dayStar}</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <h3 className="font-medium mb-2" style={{color:BRAND.colors.metal}}>Je Energie</h3>
-                  <StarBadge n={result.info.yearStar} />
-                  <div className="mt-3"><Properties n={result.info.yearStar} /></div>
-                </div>
-                <div>
-                  <h3 className="font-medium mb-2" style={{color:BRAND.colors.metal}}>Je Emotie</h3>
-                  <StarBadge n={result.info.monthStar} />
-                  <div className="mt-3"><Properties n={result.info.monthStar} /></div>
-                </div>
-                <div>
-                  <h3 className="font-medium mb-2" style={{color:BRAND.colors.metal}}>Je Actie</h3>
-                  <StarBadge n={result.info.dayStar} />
-                  <div className="mt-3"><Properties n={result.info.dayStar} /></div>
-                </div>
+                <Card title="Je Energie" n={result.info.yearStar} />
+                <Card title="Je Emotie" n={result.info.monthStar} />
+                <Card title="Je Actie" n={result.info.dayStar} />
               </div>
             </section>
 
-            <section className="bg-white rounded-2xl shadow-sm ring-1 p-6" style={{borderColor:BRAND.colors.base}}>
-              <h3 className="text-base font-semibold mb-3" style={{color:BRAND.colors.primary}}>Energiestroom</h3>
-              {(function(){ var y=result.info.yearStar, m=result.info.monthStar, d=result.info.dayStar; var text=flowSummary(y,m,d); return (<p className="text-sm" style={{color:BRAND.colors.metal}}>{text}</p>); })()}
-            </section>
-          </main>
-        ) : (
-          <p className="text-slate-600">Geen match gevonden in de ingebouwde dataset voor deze datum. (Wil je dat ik het bereik uitbreid?)</p>
-        )}
+            <section className="bg-white rounded-2xl shadow-sm ring-1 p-6" style={{bo
 
-        <footer className="mt-10 text-xs" style={{color:BRAND.colors.metal}}>
-          © {new Date().getFullYear()} {BRAND.name}. Tabel-gedreven Nine Star Ki, 1:1 conform je tabellen.
-        </footer>
-      </div>
-    </div>
-  );
-}
