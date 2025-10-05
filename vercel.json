@@ -1,8 +1,0 @@
-{
-  "routes": [
-    { "src": "/assets/(.*)", "dest": "/assets/$1" },
-    { "src": "/(sw\\.js|workbox-.*\\.js|manifest\\.webmanifest|logo\\.png)", "dest": "/$1" },
-    { "src": "/(.*)", "dest": "/index.html" }
-  ]
-}
-
