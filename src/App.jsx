@@ -1,8 +1,8 @@
 import React, { useMemo, useState, useEffect } from "react";
 
 // ====== BRAND SETTINGS ======
-const LOGO_DATA_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMB/awXoQAAAABJRU5ErkJggg=="; // transparant 1x1
-const BRAND = {
+const DEFAULT_LOGO = "/logo.png?v=3
+  BRAND = {
   name: "Feng Shui Nederland",
   colors: {
     primary: "#ff6342", // vuur
