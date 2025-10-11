@@ -2,10 +2,9 @@ import React, { useMemo, useState, useEffect } from "react";
 import { useRegisterSW } from "virtual:pwa-register/react";
 
 /**
- * Feng Shui Nederland — Nine Star Ki (PWA met update-banner + install-knop)
- * - Logo via /public/logo.png?v=4 (fallback naar /icons/icon-192.png?v=4)
- * - PWA update-melding met useRegisterSW
- * - InstallAppButton toont native install-prompt (Android/Chrome)
+ * Feng Shui Nederland — Nine Star Ki (PWA, stille updates + install-knop)
+ * - Geen update-banner meer (updates gebeuren stil op de achtergrond)
+ * - InstallAppButton laat Android/Chrome de app installeren
  */
 
 // ====== BRAND SETTINGS ======
@@ -17,7 +16,7 @@ const BRAND = {
     water:   "#84b9db", // water
     wood:    "#72955d", // hout
     earth:   "#bc8163", // aarde
-    metal:   "#737373", // metaal (gevraagd)
+    metal:   "#737373", // metaal
     base:    "#fbf2f0", // zachte achtergrond
   },
 };
@@ -34,7 +33,7 @@ function contrastOn(hex) {
   return L > 160 ? "#0f172a" : "#ffffff";
 }
 
-// ===== Ingebouwde DATA (samengevat uit je Excel) =====
+// ===== Ingebouwde DATA (samengevat) =====
 const DATA = {
   "year_to_star": {
     "1901":9,"1902":8,"1903":7,"1904":6,"1905":5,"1906":4,"1907":3,"1908":2,"1909":1,
@@ -80,7 +79,7 @@ function isBeforeNineKiNewYear(d) {
 function inRangeMD(m, d, start, end) {
   const a = m * 100 + d;
   const s = start.month * 100 + start.day;
-  const e = end.month * 100 + end.day; // correct
+  const e = end.month * 100 + end.day;
   if (s <= e) return a >= s && a <= e;
   return a >= s || a <= e; // periode over jaargrens
 }
@@ -212,28 +211,20 @@ function InstallAppButton() {
   );
 }
 
-// ===== PWA: Update-banner =====
-function PWABanner() {
-  const { needRefresh, updateServiceWorker, offlineReady } = useRegisterSW();
-
-  // Je kunt offlineReady gebruiken voor een "Offline klaar" toast; we houden het stil.
-  if (!needRefresh) return null;
-
-  return (
-    <div
-      className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 rounded-xl shadow-lg px-4 py-3 flex items-center gap-3"
-      style={{ background: "#0f172a", color: "#fff" }}
-    >
-      <span>Nieuwe versie beschikbaar.</span>
-      <button
-        onClick={() => updateServiceWorker(true)}
-        className="px-3 py-1 rounded-lg font-medium"
-        style={{ background: BRAND.colors.primary, color: "#fff" }}
-      >
-        Herladen
-      </button>
-    </div>
-  );
+// ===== PWA: Stille updates (geen UI) =====
+function SilentUpdater() {
+  const { needRefresh, updateServiceWorker } = useRegisterSW();
+  useEffect(() => {
+    if (needRefresh) {
+      // Update & herlaad — zonder banner in beeld
+      updateServiceWorker(true);
+      // Fallback herlaad (soms trager op sommige toestellen)
+      setTimeout(() => {
+        try { window.location.reload(); } catch (e) {}
+      }, 800);
+    }
+  }, [needRefresh, updateServiceWorker]);
+  return null;
 }
 
 // ===== Hoofdcomponent =====
@@ -332,10 +323,11 @@ export default function NineStarKiApp() {
         </footer>
       </div>
 
-      {/* PWA update-melding */}
-      <PWABanner />
+      {/* Stille PWA-updates, geen UI */}
+      <SilentUpdater />
     </div>
   );
 }
+
 
 
