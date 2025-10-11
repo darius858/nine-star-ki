@@ -1,9 +1,30 @@
 import React, { useMemo, useState, useEffect } from "react";
 
 /**
- * Feng Shui Nederland — Nine Star Ki (zonder update-banner en zonder SW-reload code)
- * - InstallAppButton blijft (optioneel installeren op Android/Chrome)
+ * Feng Shui Nederland — Nine Star Ki
+ * + Vercel Web Analytics events (install / pwa_open / web_open)
+ *   - geen update-banner
+ *   - geen SW-reload code
  */
+
+// ===== Vercel Analytics tracker (één keer renderen) =====
+function TrackAnalytics() {
+  React.useEffect(() => {
+    // 1) Android/Chrome: app geïnstalleerd
+    const onInstalled = () => { if (window.va) window.va('install') };
+    window.addEventListener('appinstalled', onInstalled);
+
+    // 2) Open in standalone (PWA) vs normaal web
+    const standalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true;
+
+    if (window.va) window.va(standalone ? 'pwa_open' : 'web_open');
+
+    return () => window.removeEventListener('appinstalled', onInstalled);
+  }, []);
+  return null;
+}
 
 // ====== BRAND SETTINGS ======
 const DEFAULT_LOGO = "/logo.png?v=4"; // zet je echte logo in /public/logo.png
@@ -304,9 +325,11 @@ export default function NineStarKiApp() {
           © {new Date().getFullYear()} {BRAND.name}.
         </footer>
       </div>
+
+      {/* Vercel Analytics tracker (één keer, onzichtbaar) */}
+      <TrackAnalytics />
     </div>
   );
 }
-
 
 
