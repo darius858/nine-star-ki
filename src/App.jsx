@@ -1,14 +1,15 @@
 import React, { useMemo, useState, useEffect } from "react";
+import { useRegisterSW } from "virtual:pwa-register/react";
 
 /**
- * Feng Shui Nederland — Nine Star Ki (stabiele build)
- * - Logo via /public/logo.png (met cache-buster)
- * - Helpers 1x gedefinieerd
- * - Alle JSX en accolades correct gesloten
+ * Feng Shui Nederland — Nine Star Ki (PWA met update-banner + install-knop)
+ * - Logo via /public/logo.png?v=4 (fallback naar /icons/icon-192.png?v=4)
+ * - PWA update-melding met useRegisterSW
+ * - InstallAppButton toont native install-prompt (Android/Chrome)
  */
 
 // ====== BRAND SETTINGS ======
-const DEFAULT_LOGO = "/logo.png?v=4"; // Zet je echte logo in /public/logo.png
+const DEFAULT_LOGO = "/logo.png?v=4"; // zet je echte logo in /public/logo.png
 const BRAND = {
   name: "Feng Shui Nederland",
   colors: {
@@ -16,7 +17,7 @@ const BRAND = {
     water:   "#84b9db", // water
     wood:    "#72955d", // hout
     earth:   "#bc8163", // aarde
-    metal:   "#737373", // metaal
+    metal:   "#737373", // metaal (gevraagd)
     base:    "#fbf2f0", // zachte achtergrond
   },
 };
@@ -33,8 +34,42 @@ function contrastOn(hex) {
   return L > 160 ? "#0f172a" : "#ffffff";
 }
 
-// ===== Ingebouwde DATA (uit jouw Excel) =====
-const DATA = {"year_to_star": {"1901":9,"1902":8,"1903":7,"1904":6,"1905":5,"1906":4,"1907":3,"1908":2,"1909":1,"1910":9,"1911":8,"1912":7,"1913":6,"1914":5,"1915":4,"1916":3,"1917":2,"1918":1,"1919":9,"1920":8,"1921":7,"1922":6,"1923":5,"1924":4,"1925":3,"1926":2,"1927":1,"1928":9,"1929":8,"1930":7,"1931":6,"1932":5,"1933":4,"1934":3,"1935":2,"1936":1,"1937":9,"1938":8,"1939":7,"1940":6,"1941":5,"1942":4,"1943":3,"1944":2,"1945":1,"1946":9,"1947":8,"1948":7,"1949":6,"1950":5,"1951":4,"1952":3,"1953":2,"1954":1,"1955":9,"1956":8,"1957":7,"1958":6,"1959":5,"1960":4,"1961":3,"1962":2,"1963":1,"1964":9,"1965":8,"1966":7,"1967":6,"1968":5,"1969":4,"1970":3,"1971":2,"1972":1,"1973":9,"1974":8,"1975":7,"1976":6,"1977":5,"1978":4,"1979":3,"1980":2,"1981":1,"1982":9,"1983":8,"1984":7,"1985":6,"1986":5,"1987":4,"1988":3,"1989":2,"1990":1,"1991":9,"1992":8,"1993":7,"1994":6,"1995":5,"1996":4,"1997":3,"1998":2,"1999":1,"2000":9,"2001":8,"2002":7,"2003":6,"2004":5,"2005":4,"2006":3,"2007":2,"2008":1,"2009":9,"2010":8,"2011":7,"2012":6,"2013":5,"2014":4,"2015":3,"2016":2,"2017":1,"2018":9,"2019":8,"2020":7,"2021":6,"2022":5,"2023":4,"2024":3,"2025":2,"2026":1,"2027":9,"2028":8,"2029":7,"2030":6,"2031":5,"2032":4,"2033":3,"2034":2,"2035":1,"2036":9,"2037":8,"2038":7,"2039":6,"2040":5,"2041":4,"2042":3,"2043":2,"2044":1,"2045":9,"2046":8,"2047":7,"2048":6,"2049":5,"2050":4,"2051":3,"2052":2,"2053":1},"month_ranges":[{"label":"4 feb - 5 mrt","start":{"month":2,"day":4},"end":{"month":3,"day":5},"sequences":{"9":[9,5,9],"8":[8,2,2],"7":[7,8,4],"6":[6,5,6],"5":[5,2,8],"4":[4,8,1],"3":[3,5,3],"2":[2,2,5],"1":[1,7,8]}},{"label":"6 mrt - 5 april","start":{"month":3,"day":6},"end":{"month":4,"day":5},"sequences":{"9":[9,4,1],"8":[8,1,3],"7":[7,7,5],"6":[6,4,7],"5":[5,1,9],"4":[4,7,2],"3":[3,4,4],"2":[2,1,6],"1":[1,7,8]}},{"label":"6 april - 5 mei","start":{"month":4,"day":6},"end":{"month":5,"day":5},"sequences":{"9":[9,3,2],"8":[8,9,4],"7":[7,6,6],"6":[6,3,8],"5":[5,9,1],"4":[4,6,3],"3":[3,3,5],"2":[2,9,7],"1":[1,6,9]}},{"label":"6 mei - 5 juni","start":{"month":5,"day":6},"end":{"month":6,"day":5},"sequences":{"9":[9,2,3],"8":[8,8,5],"7":[7,5,7],"6":[6,2,9],"5":[5,8,2],"4":[4,5,4],"3":[3,2,6],"2":[2,8,8],"1":[1,5,1]}},{"label":"6 juni - 7 juli","start":{"month":6,"day":6},"end":{"month":7,"day":7},"sequences":{"9":[9,1,4],"8":[8,7,6],"7":[7,4,8],"6":[6,1,1],"5":[5,7,3],"4":[4,4,5],"3":[3,1,7],"2":[2,7,9],"1":[1,4,2]}},{"label":"8 juli - 7 aug","start":{"month":7,"day":8},"end":{"month":8,"day":7},"sequences":{"9":[9,9,5],"8":[8,6,7],"7":[7,3,9],"6":[6,9,2],"5":[5,6,4],"4":[4,3,6],"3":[3,9,8],"2":[2,6,1],"1":[1,3,3]}},{"label":"8 aug - 7 sept","start":{"month":8,"day":8},"end":{"month":9,"day":7},"sequences":{"9":[9,8,6],"8":[8,5,8],"7":[7,2,1],"6":[6,8,3],"5":[5,5,5],"4":[4,2,7],"3":[3,8,9],"2":[2,5,2],"1":[1,2,4]}},{"label":"8 sept - 8 okt","start":{"month":9,"day":8},"end":{"month":10,"day":8},"sequences":{"9":[9,7,7],"8":[8,4,9],"7":[7,1,9],"6":[6,7,4],"5":[5,4,6],"4":[4,1,8],"3":[3,7,1],"2":[2,4,3],"1":[1,1,5]}},{"label":"9 okt - 7 nov","start":{"month":10,"day":9},"end":{"month":11,"day":7},"sequences":{"9":[9,6,8],"8":[8,3,1],"7":[7,9,3],"6":[6,6,5],"5":[5,3,7],"4":[4,9,9],"3":[3,6,2],"2":[2,3,4],"1":[1,9,6]}},{"label":"8 nov - 7 dec","start":{"month":11,"day":8},"end":{"month":12,"day":7},"sequences":{"9":[9,5,9],"8":[8,2,2],"7":[7,8,4],"6":[6,5,6],"5":[5,2,8],"4":[4,8,1],"3":[3,5,3],"2":[2,2,5],"1":[1,8,7]}},{"label":"8 dec - 5 jan","start":{"month":12,"day":8},"end":{"month":1,"day":5},"sequences":{"9":[9,4,1],"8":[8,1,3],"7":[7,7,5],"6":[6,4,7],"5":[5,1,9],"4":[4,7,2],"3":[3,4,4],"2":[2,1,6],"1":[1,7,8]}},{"label":"6 jan - 3 feb","start":{"month":1,"day":6},"end":{"month":2,"day":3},"sequences":{"9":[9,3,2],"8":[8,9,4],"7":[7,6,6],"6":[6,3,8],"5":[5,9,1],"4":[4,6,3],"3":[3,3,5],"2":[2,9,7],"1":[1,6,9]}}]};
+// ===== Ingebouwde DATA (samengevat uit je Excel) =====
+const DATA = {
+  "year_to_star": {
+    "1901":9,"1902":8,"1903":7,"1904":6,"1905":5,"1906":4,"1907":3,"1908":2,"1909":1,
+    "1910":9,"1911":8,"1912":7,"1913":6,"1914":5,"1915":4,"1916":3,"1917":2,"1918":1,
+    "1919":9,"1920":8,"1921":7,"1922":6,"1923":5,"1924":4,"1925":3,"1926":2,"1927":1,
+    "1928":9,"1929":8,"1930":7,"1931":6,"1932":5,"1933":4,"1934":3,"1935":2,"1936":1,
+    "1937":9,"1938":8,"1939":7,"1940":6,"1941":5,"1942":4,"1943":3,"1944":2,"1945":1,
+    "1946":9,"1947":8,"1948":7,"1949":6,"1950":5,"1951":4,"1952":3,"1953":2,"1954":1,
+    "1955":9,"1956":8,"1957":7,"1958":6,"1959":5,"1960":4,"1961":3,"1962":2,"1963":1,
+    "1964":9,"1965":8,"1966":7,"1967":6,"1968":5,"1969":4,"1970":3,"1971":2,"1972":1,
+    "1973":9,"1974":8,"1975":7,"1976":6,"1977":5,"1978":4,"1979":3,"1980":2,"1981":1,
+    "1982":9,"1983":8,"1984":7,"1985":6,"1986":5,"1987":4,"1988":3,"1989":2,"1990":1,
+    "1991":9,"1992":8,"1993":7,"1994":6,"1995":5,"1996":4,"1997":3,"1998":2,"1999":1,
+    "2000":9,"2001":8,"2002":7,"2003":6,"2004":5,"2005":4,"2006":3,"2007":2,"2008":1,
+    "2009":9,"2010":8,"2011":7,"2012":6,"2013":5,"2014":4,"2015":3,"2016":2,"2017":1,
+    "2018":9,"2019":8,"2020":7,"2021":6,"2022":5,"2023":4,"2024":3,"2025":2,"2026":1,
+    "2027":9,"2028":8,"2029":7,"2030":6,"2031":5,"2032":4,"2033":3,"2034":2,"2035":1,
+    "2036":9,"2037":8,"2038":7,"2039":6,"2040":5,"2041":4,"2042":3,"2043":2,"2044":1,
+    "2045":9,"2046":8,"2047":7,"2048":6,"2049":5,"2050":4,"2051":3,"2052":2,"2053":1
+  },
+  "month_ranges":[
+    {"label":"4 feb - 5 mrt","start":{"month":2,"day":4},"end":{"month":3,"day":5},"sequences":{"9":[9,5,9],"8":[8,2,2],"7":[7,8,4],"6":[6,5,6],"5":[5,2,8],"4":[4,8,1],"3":[3,5,3],"2":[2,2,5],"1":[1,7,8]}},
+    {"label":"6 mrt - 5 april","start":{"month":3,"day":6},"end":{"month":4,"day":5},"sequences":{"9":[9,4,1],"8":[8,1,3],"7":[7,7,5],"6":[6,4,7],"5":[5,1,9],"4":[4,7,2],"3":[3,4,4],"2":[2,1,6],"1":[1,7,8]}},
+    {"label":"6 april - 5 mei","start":{"month":4,"day":6},"end":{"month":5,"day":5},"sequences":{"9":[9,3,2],"8":[8,9,4],"7":[7,6,6],"6":[6,3,8],"5":[5,9,1],"4":[4,6,3],"3":[3,3,5],"2":[2,9,7],"1":[1,6,9]}},
+    {"label":"6 mei - 5 juni","start":{"month":5,"day":6},"end":{"month":6,"day":5},"sequences":{"9":[9,2,3],"8":[8,8,5],"7":[7,5,7],"6":[6,2,9],"5":[5,8,2],"4":[4,5,4],"3":[3,2,6],"2":[2,8,8],"1":[1,5,1]}},
+    {"label":"6 juni - 7 juli","start":{"month":6,"day":6},"end":{"month":7,"day":7},"sequences":{"9":[9,1,4],"8":[8,7,6],"7":[7,4,8],"6":[6,1,1],"5":[5,7,3],"4":[4,4,5],"3":[3,1,7],"2":[2,7,9],"1":[1,4,2]}},
+    {"label":"8 juli - 7 aug","start":{"month":7,"day":8},"end":{"month":8,"day":7},"sequences":{"9":[9,9,5],"8":[8,6,7],"7":[7,3,9],"6":[6,9,2],"5":[5,6,4],"4":[4,3,6],"3":[3,9,8],"2":[2,6,1],"1":[1,3,3]}},
+    {"label":"8 aug - 7 sept","start":{"month":8,"day":8},"end":{"month":9,"day":7},"sequences":{"9":[9,8,6],"8":[8,5,8],"7":[7,2,1],"6":[6,8,3],"5":[5,5,5],"4":[4,2,7],"3":[3,8,9],"2":[2,5,2],"1":[1,2,4]}},
+    {"label":"8 sept - 8 okt","start":{"month":9,"day":8},"end":{"month":10,"day":8},"sequences":{"9":[9,7,7],"8":[8,4,9],"7":[7,1,9],"6":[6,7,4],"5":[5,4,6],"4":[4,1,8],"3":[3,7,1],"2":[2,4,3],"1":[1,1,5]}},
+    {"label":"9 okt - 7 nov","start":{"month":10,"day":9},"end":{"month":11,"day":7},"sequences":{"9":[9,6,8],"8":[8,3,1],"7":[7,9,3],"6":[6,6,5],"5":[5,3,7],"4":[4,9,9],"3":[3,6,2],"2":[2,3,4],"1":[1,9,6]}},
+    {"label":"8 nov - 7 dec","start":{"month":11,"day":8},"end":{"month":12,"day":7},"sequences":{"9":[9,5,9],"8":[8,2,2],"7":[7,8,4],"6":[6,5,6],"5":[5,2,8],"4":[4,8,1],"3":[3,5,3],"2":[2,2,5],"1":[1,8,7]}},
+    {"label":"8 dec - 5 jan","start":{"month":12,"day":8},"end":{"month":1,"day":5},"sequences":{"9":[9,4,1],"8":[8,1,3],"7":[7,7,5],"6":[6,4,7],"5":[5,1,9],"4":[4,7,2],"3":[3,4,4],"2":[2,1,6],"1":[1,7,8]}},
+    {"label":"6 jan - 3 feb","start":{"month":1,"day":6},"end":{"month":2,"day":3},"sequences":{"9":[9,3,2],"8":[8,9,4],"7":[7,6,6],"6":[6,3,8],"5":[5,9,1],"4":[4,6,3],"3":[3,3,5],"2":[2,9,7],"1":[1,6,9]}}
+  ]
+};
 
 // ===== Berekening helpers =====
 function isBeforeNineKiNewYear(d) {
@@ -101,6 +136,8 @@ function flowSummary(y, m, d) {
   const s2 = (M.emotion ? M.emotion + " " : "") + (D.action || "Je komt in actie op een eigen, herkenbare manier.");
   return s1 + " " + s2;
 }
+
+// ===== Kleine componenten =====
 function StarBadge({ n }) {
   const bg = colorFor(n);
   const fg = contrastOn(bg);
@@ -139,6 +176,66 @@ function Card({ title, n }) {
   );
 }
 
+// ===== PWA: Install-knop (Android/Chrome) =====
+function InstallAppButton() {
+  const [canInstall, setCanInstall] = React.useState(false);
+  const [deferred, setDeferred] = React.useState(null);
+
+  React.useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferred(e);
+      setCanInstall(true);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const onClick = async () => {
+    if (!deferred) return;
+    deferred.prompt();
+    await deferred.userChoice;
+    setDeferred(null);
+    setCanInstall(false);
+  };
+
+  if (!canInstall) return null;
+
+  return (
+    <button
+      onClick={onClick}
+      className="px-3 py-2 rounded-xl text-sm font-medium shadow-sm"
+      style={{ backgroundColor: BRAND.colors.primary, color: "#fff" }}
+    >
+      App installeren
+    </button>
+  );
+}
+
+// ===== PWA: Update-banner =====
+function PWABanner() {
+  const { needRefresh, updateServiceWorker, offlineReady } = useRegisterSW();
+
+  // Je kunt offlineReady gebruiken voor een "Offline klaar" toast; we houden het stil.
+  if (!needRefresh) return null;
+
+  return (
+    <div
+      className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 rounded-xl shadow-lg px-4 py-3 flex items-center gap-3"
+      style={{ background: "#0f172a", color: "#fff" }}
+    >
+      <span>Nieuwe versie beschikbaar.</span>
+      <button
+        onClick={() => updateServiceWorker(true)}
+        className="px-3 py-1 rounded-lg font-medium"
+        style={{ background: BRAND.colors.primary, color: "#fff" }}
+      >
+        Herladen
+      </button>
+    </div>
+  );
+}
+
 // ===== Hoofdcomponent =====
 export default function NineStarKiApp() {
   const [value, setValue] = useState("1990-08-15");
@@ -165,33 +262,40 @@ export default function NineStarKiApp() {
     <div className="min-h-screen text-slate-900" style={{ background: "linear-gradient(180deg, " + BRAND.colors.base + " 0%, #ffffff 60%)" }}>
       <div className="max-w-4xl mx-auto px-4 py-10">
         <header className="mb-8 rounded-2xl shadow-sm ring-1" style={{ background: headerBg, borderColor: BRAND.colors.base }}>
-          <div className="flex items-center gap-4 p-5">
-            <div className="p-2 rounded-md ring-1 ring-slate-200 bg-slate-50"
-              style={{
-                backgroundImage: "linear-gradient(45deg, rgba(148,163,184,.25) 25%, rgba(0,0,0,0) 25%, rgba(0,0,0,0) 50%, rgba(148,163,184,.25) 50%, rgba(148,163,184,.25) 75%, rgba(0,0,0,0) 75%, rgba(0,0,0,0))",
-                backgroundSize: "8px 8px",
-              }}>
-              <img
-                src={logoUrl}
-                alt="Feng Shui Nederland"
-                className="w-16 h-16 object-contain"
-                onError={() => {
-                  if (logoUrl !== "/icons/icon-192.png?v=4") setLogoUrl("/icons/icon-192.png?v=4");
-                }}
-              />
+          <div className="flex items-center justify-between gap-4 p-5">
+            <div className="flex items-center gap-4">
+              <div className="p-2 rounded-full ring-1 shadow-sm" style={{ borderColor: BRAND.colors.metal, backgroundColor: "#ffffff" }}>
+                <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: `radial-gradient(circle at 30% 30%, #fff, ${BRAND.colors.base})` }}>
+                  <img
+                    src={logoUrl}
+                    alt="Feng Shui Nederland"
+                    className="w-12 h-12 object-contain"
+                    style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,.15))" }}
+                    onError={() => {
+                      if (logoUrl !== "/icons/icon-192.png?v=4") setLogoUrl("/icons/icon-192.png?v=4");
+                    }}
+                  />
+                </div>
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight" style={{ color: BRAND.colors.primary }}>{BRAND.name}</h1>
+                <p className="text-slate-600">Feng Shui Nederland - DE Nine Star Ki calculator</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight" style={{ color: BRAND.colors.primary }}>{BRAND.name}</h1>
-              <p className="text-slate-600">Feng Shui Nederland - DE Nine Star Ki calculator</p>
-            </div>
+            <InstallAppButton />
           </div>
           <div style={{ height: 4, backgroundColor: BRAND.colors.primary, borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }} />
         </header>
 
         <div className="bg-white rounded-2xl shadow-sm ring-1 p-5 mb-8" style={{ borderColor: BRAND.colors.base }}>
           <label className="block text-sm font-medium" style={{ color: BRAND.colors.metal }}>Geboortedatum</label>
-          <input type="date" className="mt-2 w-full rounded-xl border px-3 py-2 focus:outline-none"
-            style={{ borderColor: BRAND.colors.base }} value={value} onChange={(e) => setValue(e.target.value)} />
+          <input
+            type="date"
+            className="mt-2 w-full rounded-xl border px-3 py-2 focus:outline-none"
+            style={{ borderColor: BRAND.colors.base }}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+          />
         </div>
 
         {result && result.info ? (
@@ -199,9 +303,11 @@ export default function NineStarKiApp() {
             <section className="bg-white rounded-2xl shadow-sm ring-1 p-6" style={{ borderColor: BRAND.colors.base }}>
               <h2 className="text-xl font-semibold mb-4" style={{ color: BRAND.colors.primary }}>Jouw Nine Star Ki</h2>
               <div className="text-sm mb-4" style={{ color: BRAND.colors.metal }}>
-                Reeks: <span className="font-semibold" style={{ color: BRAND.colors.primary }}>
+                Reeks:{" "}
+                <span className="font-semibold" style={{ color: BRAND.colors.primary }}>
                   {result.info.yearStar} – {result.info.monthStar} – {result.info.dayStar}
                 </span>
+                <span className="ml-2 text-slate-500">({result.info.monthLabel})</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card title="Je Energie" n={result.info.yearStar} />
@@ -225,7 +331,11 @@ export default function NineStarKiApp() {
           © {new Date().getFullYear()} {BRAND.name}.
         </footer>
       </div>
+
+      {/* PWA update-melding */}
+      <PWABanner />
     </div>
   );
 }
+
 
