@@ -1,10 +1,8 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { useRegisterSW } from "virtual:pwa-register/react";
 
 /**
- * Feng Shui Nederland — Nine Star Ki (PWA, stille updates + install-knop)
- * - Geen update-banner meer (updates gebeuren stil op de achtergrond)
- * - InstallAppButton laat Android/Chrome de app installeren
+ * Feng Shui Nederland — Nine Star Ki (zonder update-banner en zonder SW-reload code)
+ * - InstallAppButton blijft (optioneel installeren op Android/Chrome)
  */
 
 // ====== BRAND SETTINGS ======
@@ -177,10 +175,10 @@ function Card({ title, n }) {
 
 // ===== PWA: Install-knop (Android/Chrome) =====
 function InstallAppButton() {
-  const [canInstall, setCanInstall] = React.useState(false);
-  const [deferred, setDeferred] = React.useState(null);
+  const [canInstall, setCanInstall] = useState(false);
+  const [deferred, setDeferred] = useState(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handler = (e) => {
       e.preventDefault();
       setDeferred(e);
@@ -209,22 +207,6 @@ function InstallAppButton() {
       App installeren
     </button>
   );
-}
-
-// ===== PWA: Stille updates (geen UI) =====
-function SilentUpdater() {
-  const { needRefresh, updateServiceWorker } = useRegisterSW();
-  useEffect(() => {
-    if (needRefresh) {
-      // Update & herlaad — zonder banner in beeld
-      updateServiceWorker(true);
-      // Fallback herlaad (soms trager op sommige toestellen)
-      setTimeout(() => {
-        try { window.location.reload(); } catch (e) {}
-      }, 800);
-    }
-  }, [needRefresh, updateServiceWorker]);
-  return null;
 }
 
 // ===== Hoofdcomponent =====
@@ -322,9 +304,6 @@ export default function NineStarKiApp() {
           © {new Date().getFullYear()} {BRAND.name}.
         </footer>
       </div>
-
-      {/* Stille PWA-updates, geen UI */}
-      <SilentUpdater />
     </div>
   );
 }
