@@ -232,7 +232,9 @@ function InstallAppButton() {
 
 // ===== Hoofdcomponent =====
 export default function NineStarKiApp() {
-  const [value, setValue] = useState("1990-08-15");
+  const [birthDay, setBirthDay] = useState("15");
+  const [birthMonth, setBirthMonth] = useState("8");
+  const [birthYear, setBirthYear] = useState("1990");
   const [logoUrl, setLogoUrl] = useState(DEFAULT_LOGO);
 
   useEffect(() => {
@@ -243,12 +245,25 @@ export default function NineStarKiApp() {
   }, []);
 
   const result = useMemo(() => {
-    const d = value ? new Date(value + "T12:00:00") : null;
-    if (!d || isNaN(d.getTime())) return null;
+    if (!birthDay || !birthMonth || birthYear.length < 4) return null;
+
+    const day = Number(birthDay);
+    const month = Number(birthMonth);
+    const year = Number(birthYear);
+    const d = new Date(year, month - 1, day, 12, 0, 0);
+    const isValid =
+      Number.isInteger(day) &&
+      Number.isInteger(month) &&
+      Number.isInteger(year) &&
+      d.getFullYear() === year &&
+      d.getMonth() === month - 1 &&
+      d.getDate() === day;
+
+    if (!isValid) return { date: null, info: null, error: "Vul een geldige geboortedatum in." };
     const seq = sequenceFromDataset(d);
     if (!seq) return { date: d, info: null };
     return { date: d, info: { yearStar: seq.year, monthStar: seq.month, dayStar: seq.day, monthLabel: seq.monthLabel } };
-  }, [value]);
+  }, [birthDay, birthMonth, birthYear]);
 
   const headerBg = "linear-gradient(90deg, " + BRAND.colors.base + ", #ffffff)";
 
@@ -283,13 +298,59 @@ export default function NineStarKiApp() {
 
         <div className="bg-white rounded-2xl shadow-sm ring-1 p-5 mb-8" style={{ borderColor: BRAND.colors.base }}>
           <label className="block text-sm font-medium" style={{ color: BRAND.colors.metal }}>Geboortedatum</label>
-          <input
-            type="date"
-            className="mt-2 w-full rounded-xl border px-3 py-2 focus:outline-none"
-            style={{ borderColor: BRAND.colors.base }}
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-          />
+          <p className="mt-1 text-xs text-slate-500">Vul je datum in met losse velden. Zo werkt het op elke telefoon.</p>
+          <div className="mt-3 grid grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Dag</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={2}
+                className="w-full rounded-xl border px-3 py-2 focus:outline-none"
+                style={{ borderColor: BRAND.colors.base }}
+                value={birthDay}
+                onChange={(e) => setBirthDay(e.target.value.replace(/\D/g, "").slice(0, 2))}
+                placeholder="15"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Maand</label>
+              <select
+                className="w-full rounded-xl border px-3 py-2 focus:outline-none bg-white"
+                style={{ borderColor: BRAND.colors.base }}
+                value={birthMonth}
+                onChange={(e) => setBirthMonth(e.target.value)}
+              >
+                <option value="1">Jan</option>
+                <option value="2">Feb</option>
+                <option value="3">Mrt</option>
+                <option value="4">Apr</option>
+                <option value="5">Mei</option>
+                <option value="6">Jun</option>
+                <option value="7">Jul</option>
+                <option value="8">Aug</option>
+                <option value="9">Sep</option>
+                <option value="10">Okt</option>
+                <option value="11">Nov</option>
+                <option value="12">Dec</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Jaar</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={4}
+                className="w-full rounded-xl border px-3 py-2 focus:outline-none"
+                style={{ borderColor: BRAND.colors.base }}
+                value={birthYear}
+                onChange={(e) => setBirthYear(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                placeholder="1990"
+              />
+            </div>
+          </div>
         </div>
 
         {result && result.info ? (
@@ -318,7 +379,11 @@ export default function NineStarKiApp() {
             </section>
           </main>
         ) : (
-          <p className="text-slate-600">Geen match gevonden in de ingebouwde dataset voor deze datum.</p>
+          <p className="text-slate-600">
+            {result
+              ? (result.error || "Geen match gevonden in de ingebouwde dataset voor deze datum.")
+              : "Vul je geboortedatum in om je reeks te berekenen."}
+          </p>
         )}
 
         <footer className="mt-10 text-xs" style={{ color: BRAND.colors.metal }}>
