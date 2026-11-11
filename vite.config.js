@@ -27,7 +27,7 @@ export default defineConfig({
       ],
 
       manifest: {
-        name: 'Feng Shui Nederland — Nine Star Ki',
+        name: 'Nine Star Ki Calculator',
         short_name: 'Nine Star Ki',
         start_url: '/',
         display: 'standalone',
