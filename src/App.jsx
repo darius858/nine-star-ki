@@ -30,7 +30,7 @@ function TrackAnalytics() {
 // ====== BRAND SETTINGS ======
 const DEFAULT_LOGO = "/logo.png?v=4"; // zet je echte logo in /public/logo.png
 const BRAND = {
-  name: "Feng Shui Nederland",
+  name: "Nine Star Ki Calculator",
   colors: {
     primary: "#ff6342", // vuur
     water:   "#84b9db", // water
@@ -278,7 +278,7 @@ export default function NineStarKiApp() {
                 <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: `radial-gradient(circle at 30% 30%, #fff, ${BRAND.colors.base})` }}>
                   <img
                     src={logoUrl}
-                    alt="Feng Shui Nederland"
+                    alt="Nine Star Ki Calculator"
                     className="w-12 h-12 object-contain"
                     style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,.15))" }}
                     onError={() => {
@@ -289,7 +289,7 @@ export default function NineStarKiApp() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold tracking-tight" style={{ color: BRAND.colors.primary }}>{BRAND.name}</h1>
-                <p className="text-slate-600">Feng Shui Nederland - DE Nine Star Ki calculator</p>
+                <p className="text-slate-600">Ontdek jouw Nine Star Ki-energie</p>
               </div>
             </div>
             <InstallAppButton />
