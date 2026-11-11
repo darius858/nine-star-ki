@@ -20,7 +20,7 @@ const ENERGIEEN = [
   { getal: 9, element: "Vuur", kleur: "#ff6342", kern: "Inspiratie, zichtbaarheid en enthousiasme", aandacht: "Veel prikkels of een hoog tempo kunnen tot onrust leiden." },
 ];
 
-function UitlegOnderdeel({ titel, kinderen, open = false }) {
+function UitlegOnderdeel({ titel, children, open = false }) {
   return (
     <details
       open={open || undefined}
@@ -30,7 +30,7 @@ function UitlegOnderdeel({ titel, kinderen, open = false }) {
         {titel}
       </summary>
       <div className="border-t border-slate-100 px-4 pb-5 pt-4 text-sm leading-7 text-slate-700">
-        {kinderen}
+        {children}
       </div>
     </details>
   );
