@@ -110,6 +110,37 @@ export default function NineStarKiGuide() {
           </div>
         </UitlegOnderdeel>
 
+        <UitlegOnderdeel titel="Hoe werken de elementen samen?">
+          <p>
+            In de traditionele vijf-elementenleer staan de elementen niet los van elkaar.
+            De voedende cyclus loopt van <strong>Hout naar Vuur, Vuur naar Aarde,
+            Aarde naar Metaal, Metaal naar Water en Water naar Hout</strong>.
+          </p>
+          <p className="mt-3">
+            Dit is een symbolisch model. Het helpt je onderzoeken hoe verschillende
+            kwaliteiten elkaar kunnen aanvullen. De cyclus betekent niet dat
+            mensen met bepaalde getallen automatisch goed of slecht bij elkaar passen.
+          </p>
+        </UitlegOnderdeel>
+
+        <UitlegOnderdeel titel="Hoe gebruik je jouw reeks in het dagelijks leven?">
+          <p>
+            Kijk eerst naar je drie getallen bovenaan de calculator. Lees daarna per
+            getal de algemene kwaliteiten en aandachtspunten. Vergelijk ze met je
+            eigen ervaringen: welke herken je en welke juist niet?
+          </p>
+          <p className="mt-3">
+            Bijvoorbeeld: bij een denkbeeldige reeks <strong>3–4–7</strong> legt
+            Nine Star Ki de nadruk op initiatief (3), afstemming en communicatie (4)
+            en een expressieve manier van handelen (7). Samen geven de getallen
+            meer nuance dan één los kenmerk.
+          </p>
+          <p className="mt-3">
+            Gebruik de uitleg als hulpmiddel voor reflectie. Je blijft zelf
+            verantwoordelijk voor je keuzes en ontwikkeling.
+          </p>
+        </UitlegOnderdeel>
+
         <UitlegOnderdeel titel="Ontdek de negen energieën">
           <p className="mb-4">
             Kies een getal om de algemene kenmerken te bekijken. Herken je iets?
