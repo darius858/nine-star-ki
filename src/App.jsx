@@ -1,3 +1,4 @@
+import NineStarKiGuide from "./NineStarKiGuide.jsx";
 import React, { useMemo, useState, useEffect } from "react";
 
 /**
@@ -385,6 +386,8 @@ export default function NineStarKiApp() {
               : "Vul je geboortedatum in om je reeks te berekenen."}
           </p>
         )}
+
+        <NineStarKiGuide />
 
         <footer className="mt-10 text-xs" style={{ color: BRAND.colors.metal }}>
           © {new Date().getFullYear()} {BRAND.name}.
