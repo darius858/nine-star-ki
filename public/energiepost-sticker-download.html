@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Nine Star Ki Energiepost – sticker naar PNG</title>
+  <style>
+    body{margin:0;background:#fcf7f4;color:#302121;font:16px/1.55 system-ui,Arial,sans-serif}
+    main{max-width:800px;margin:40px auto;padding:0 20px}
+    h1{font-family:Georgia,serif;color:#791b2a}
+    img{display:block;max-width:100%;height:auto;background:white;border-radius:14px}
+    .panel{border:1px solid #ead8c3;background:white;padding:22px;border-radius:18px;margin:20px 0}
+    button{background:#791b2a;color:white;border:0;border-radius:12px;padding:14px 22px;font-size:16px;font-weight:700;cursor:pointer;margin:10px 8px 10px 0}
+    button:disabled{opacity:.6;cursor:wait}
+    small{color:#655750}
+    #status{min-height:1.5em}
+  </style>
+</head>
+<body>
+<main>
+ <h1>Nine Star Ki Energiepost</h1>
+ <p>De originele afbeelding van je vlam-, druppel- en metaal-logo staat <strong>ongewijzigd</strong> op deze ovale sticker.</p>
+ <section class="panel">
+  <h2>Gouden sticker · 50 × 35 mm</h2>
+  <img src="./energiepost-sticker-goud.svg" alt="Liggend ovale gouden Energiepost-sticker met origineel Nine Star Ki-logo">
+  <p><button data-source="./energiepost-sticker-goud.svg" data-name="NineStarKi_Energiepost_Goud_50x35mm.png">Download gouden PNG</button></p>
+  <small>PNG op 2400 × 1680 pixels, bedoeld als hoog-resolutie upload voor Temu. Het goud is een afbeeldingseffect, geen echte metallic inkt.</small>
+ </section>
+ <section class="panel">
+  <h2>Voor echte metallic-goudstickers</h2>
+  <img src="./energiepost-sticker-print.svg" alt="Drukontwerp met donkerrode lijnen en origineel logo op transparante achtergrond">
+  <p><button data-source="./energiepost-sticker-print.svg" data-name="NineStarKi_Energiepost_Op_Goudpapier_50x35mm.png">Download PNG voor goudpapier</button></p>
+  <small>Alleen geschikt als de leverancier daadwerkelijk metallic goudpapier gebruikt. Vraag de drukker eerst of dit formaat en deze bedrukking worden ondersteund.</small>
+ </section>
+ <p id="status" role="status" aria-live="polite"></p>
+ <p><small>Bij een rechthoekig Temu-uploadvlak moet je controleren of de verkoper echt ovaal snijdt. De afbeelding alleen bepaalt de snijvorm niet.</small></p>
+</main>
+<script>
+  async function makePng(svgPath, filename) {
+    const status=document.querySelector('#status');
+    status.textContent='PNG wordt gemaakt...';
+    const img=new Image();
+    img.decoding='async';
+    img.src=svgPath;
+    await img.decode();
+    const canvas=document.createElement('canvas');
+    canvas.width=2400; canvas.height=1680;
+    const ctx=canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas niet beschikbaar');
+    ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('PNG maken mislukt')),'image/png'));
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=filename;
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),10000);
+    status.textContent='PNG gedownload. Open het bestand en upload het bij Temu.';
+  }
+  document.querySelectorAll('button[data-source]').forEach(button=>{
+    button.addEventListener('click',async()=>{
+      button.disabled=true;
+      try{await makePng(button.dataset.source,button.dataset.name)}
+      catch(err){document.querySelector('#status').textContent='Download niet gelukt: '+err.message+'. Probeer Chrome of Edge.'}
+      finally{button.disabled=false}
+    })
+  });
+</script>
+</body>
+</html>
