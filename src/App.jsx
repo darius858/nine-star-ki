@@ -237,6 +237,14 @@ export default function NineStarKiApp() {
   const [birthMonth, setBirthMonth] = useState("8");
   const [birthYear, setBirthYear] = useState("1990");
   const [logoUrl, setLogoUrl] = useState(DEFAULT_LOGO);
+  const [activeView, setActiveView] = useState("calculator");
+
+  const navigateTo = (view) => {
+    setActiveView(view);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   useEffect(() => {
     try {
@@ -297,6 +305,37 @@ export default function NineStarKiApp() {
           <div style={{ height: 4, backgroundColor: BRAND.colors.primary, borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }} />
         </header>
 
+        <nav aria-label="Hoofdmenu" className="mb-6 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => navigateTo("calculator")}
+            aria-current={activeView === "calculator" ? "page" : undefined}
+            className="rounded-xl border px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{
+              backgroundColor: activeView === "calculator" ? BRAND.colors.primary : "#ffffff",
+              color: activeView === "calculator" ? "#ffffff" : BRAND.colors.metal,
+              borderColor: BRAND.colors.primary,
+            }}
+          >
+            Calculator
+          </button>
+          <button
+            type="button"
+            onClick={() => navigateTo("uitleg")}
+            aria-current={activeView === "uitleg" ? "page" : undefined}
+            className="rounded-xl border px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{
+              backgroundColor: activeView === "uitleg" ? BRAND.colors.primary : "#ffffff",
+              color: activeView === "uitleg" ? "#ffffff" : BRAND.colors.metal,
+              borderColor: BRAND.colors.primary,
+            }}
+          >
+            Meer uitleg
+          </button>
+        </nav>
+
+        {activeView === "calculator" ? (
+          <>
         <div className="bg-white rounded-2xl shadow-sm ring-1 p-5 mb-8" style={{ borderColor: BRAND.colors.base }}>
           <label className="block text-sm font-medium" style={{ color: BRAND.colors.metal }}>Geboortedatum</label>
           <p className="mt-1 text-xs text-slate-500">Vul je datum in met losse velden. Zo werkt het op elke telefoon.</p>
@@ -387,7 +426,36 @@ export default function NineStarKiApp() {
           </p>
         )}
 
-        <NineStarKiGuide />
+        <section className="mt-6 flex flex-col gap-4 rounded-2xl bg-white p-5 shadow-sm ring-1 sm:flex-row sm:items-center sm:justify-between" style={{ borderColor: BRAND.colors.base }}>
+          <div>
+            <h2 className="text-lg font-semibold" style={{ color: BRAND.colors.primary }}>Wil je meer weten?</h2>
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              Ontdek wat je drie getallen betekenen en leer meer over de vijf elementen en de negen energieën.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigateTo("uitleg")}
+            className="shrink-0 rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ backgroundColor: BRAND.colors.primary }}
+          >
+            Bekijk de uitleg
+          </button>
+        </section>
+          </>
+        ) : (
+          <>
+            <NineStarKiGuide />
+            <button
+              type="button"
+              onClick={() => navigateTo("calculator")}
+              className="mt-5 rounded-xl border bg-white px-4 py-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ borderColor: BRAND.colors.primary, color: BRAND.colors.primary }}
+            >
+              ← Terug naar calculator
+            </button>
+          </>
+        )}
 
         <footer className="mt-10 text-xs" style={{ color: BRAND.colors.metal }}>
           © {new Date().getFullYear()} {BRAND.name}.
